@@ -24,6 +24,8 @@ class UserCreate(UserBase):
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Пароль должен содержать минимум 8 символов')
+        if len(v) > 72:
+            raise ValueError('Пароль не может быть длиннее 72 символов')
         return v
 
 
