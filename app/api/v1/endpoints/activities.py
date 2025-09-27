@@ -118,7 +118,7 @@ async def delete_activity(
     activity_id: int,
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
-) -> Any:
+):
     """Удаление активности"""
     activity_service = ActivityService(db)
     success = await activity_service.delete_activity(activity_id, current_user.id)

@@ -27,7 +27,7 @@ class User(Base):
     
     # JSON поля для дополнительных данных
     preferences = Column(JSON, default=dict)
-    metadata = Column(JSON, default=dict)
+    user_metadata = Column(JSON, default=dict)
     
     # Временные метки
     created_at = Column(DateTime(timezone=True), server_default=func.now())

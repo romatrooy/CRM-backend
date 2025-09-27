@@ -37,7 +37,7 @@ class FileInDB(FileBase):
     is_public: bool = False
     is_encrypted: bool = False
     access_level: str = "private"
-    metadata: Dict[str, Any] = {}
+    file_metadata: Dict[str, Any] = {}
     created_at: datetime
     updated_at: Optional[datetime] = None
     

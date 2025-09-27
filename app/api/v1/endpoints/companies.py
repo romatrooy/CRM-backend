@@ -112,7 +112,7 @@ async def delete_company(
     company_id: int,
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
-) -> Any:
+):
     """Удаление компании"""
     company_service = CompanyService(db)
     success = await company_service.delete_company(company_id, current_user.id)

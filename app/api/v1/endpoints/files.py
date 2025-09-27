@@ -2,7 +2,7 @@
 Эндпоинты для файлов
 """
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File as FastAPIFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_async_session
@@ -85,7 +85,7 @@ async def get_file(
 
 @router.post("/upload", response_model=File, status_code=status.HTTP_201_CREATED)
 async def upload_file(
-    file: UploadFile = File(...),
+    file: UploadFile = FastAPIFile(...),
     title: str = Query(None, description="Название файла"),
     description: str = Query(None, description="Описание файла"),
     contact_id: int = Query(None, description="ID контакта"),
@@ -118,7 +118,7 @@ async def delete_file(
     file_id: int,
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
-) -> Any:
+):
     """Удаление файла"""
     file_service = FileService(db)
     success = await file_service.delete_file(file_id, current_user.id)

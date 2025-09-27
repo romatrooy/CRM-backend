@@ -112,7 +112,7 @@ async def delete_contact(
     contact_id: int,
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
-) -> Any:
+):
     """Удаление контакта"""
     contact_service = ContactService(db)
     success = await contact_service.delete_contact(contact_id, current_user.id)

@@ -46,7 +46,7 @@ class UserInDB(UserBase):
     is_verified: bool
     avatar_url: Optional[str] = None
     preferences: Dict[str, Any] = {}
-    metadata: Dict[str, Any] = {}
+    user_metadata: Dict[str, Any] = {}
     created_at: datetime
     updated_at: Optional[datetime] = None
     last_login: Optional[datetime] = None

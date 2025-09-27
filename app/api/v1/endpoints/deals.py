@@ -116,7 +116,7 @@ async def delete_deal(
     deal_id: int,
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
-) -> Any:
+):
     """Удаление сделки"""
     deal_service = DealService(db)
     success = await deal_service.delete_deal(deal_id, current_user.id)

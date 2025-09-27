@@ -43,7 +43,7 @@ class File(Base):
     
     # JSON поля для дополнительных данных
     custom_fields = Column(JSON, default=dict)
-    metadata = Column(JSON, default=dict)  # exif, dimensions, etc.
+    file_metadata = Column(JSON, default=dict)  # exif, dimensions, etc.
     
     # Временные метки
     created_at = Column(DateTime(timezone=True), server_default=func.now())
