@@ -31,6 +31,11 @@ class CompanyBase(BaseModel):
     custom_fields: Dict[str, Any] = {}
     tags: List[str] = []
     social_links: Dict[str, str] = {}
+    
+    @validator('parent_company_id')
+    def validate_parent_company_id(cls, v):
+        """Преобразуем 0 в None для внешнего ключа"""
+        return None if v == 0 else v
 
 
 class CompanyCreate(CompanyBase):

@@ -15,13 +15,15 @@ router = APIRouter()
 
 
 async def get_current_user(
-    token: str = Depends(verify_token),
+    token: dict = Depends(verify_token),
     db: AsyncSession = Depends(get_async_session)
 ) -> User:
     """Получение текущего пользователя"""
     from app.services.user_service import UserService
     user_service = UserService(db)
-    user = await user_service.get_by_id(token["user_id"])
+    # В токене используется ключ "sub" для хранения user_id
+    user_id = int(token.get("sub"))
+    user = await user_service.get_by_id(user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -84,9 +86,21 @@ async def create_contact(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """Создание нового контакта"""
-    contact_service = ContactService(db)
-    contact = await contact_service.create_contact(contact_data, current_user.id)
-    return contact
+    try:
+        contact_service = ContactService(db)
+        contact = await contact_service.create_contact(contact_data, current_user.id)
+        return contact
+    except Exception as e:
+        error_msg = str(e)
+        if "company_id" in error_msg.lower() or "foreign key" in error_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Компания с ID {contact_data.company_id} не найдена. Убедитесь, что компания существует или не указывайте company_id."
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при создании контакта"
+        )
 
 
 @router.put("/{contact_id}", response_model=Contact)

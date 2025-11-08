@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, validator
+from app.models.deal import DealStatus
 
 
 class DealBase(BaseModel):
@@ -14,10 +15,9 @@ class DealBase(BaseModel):
     amount: Optional[Decimal] = None
     currency: str = "RUB"
     probability: int = 0
-    stage: str
-    status: str = "open"
+    status: DealStatus = DealStatus.NEW
     expected_close_date: Optional[datetime] = None
-    contact_id: Optional[int] = None
+    contact_id: Optional[int] = None  # Клиент
     company_id: Optional[int] = None
     source: Optional[str] = None
     notes: Optional[str] = None
@@ -28,6 +28,19 @@ class DealBase(BaseModel):
     def validate_probability(cls, v):
         if v < 0 or v > 100:
             raise ValueError('Вероятность должна быть от 0 до 100')
+        return v
+    
+    @validator('contact_id', 'company_id')
+    def validate_foreign_keys(cls, v):
+        """Преобразуем 0 в None для внешних ключей"""
+        return None if v == 0 else v
+    
+    @validator('expected_close_date')
+    def validate_date_timezone(cls, v):
+        """Преобразуем timezone-aware datetime в timezone-naive для expected_close_date"""
+        if v is not None and v.tzinfo is not None:
+            # Убираем timezone информацию
+            return v.replace(tzinfo=None)
         return v
 
 
@@ -43,8 +56,7 @@ class DealUpdate(BaseModel):
     amount: Optional[Decimal] = None
     currency: Optional[str] = None
     probability: Optional[int] = None
-    stage: Optional[str] = None
-    status: Optional[str] = None
+    status: Optional[DealStatus] = None
     expected_close_date: Optional[datetime] = None
     actual_close_date: Optional[datetime] = None
     contact_id: Optional[int] = None
@@ -53,6 +65,11 @@ class DealUpdate(BaseModel):
     notes: Optional[str] = None
     custom_fields: Optional[Dict[str, Any]] = None
     tags: Optional[List[str]] = None
+
+
+class DealStatusUpdate(BaseModel):
+    """Схема для обновления статуса сделки"""
+    status: DealStatus
 
 
 class DealInDB(DealBase):
@@ -65,6 +82,7 @@ class DealInDB(DealBase):
     
     class Config:
         from_attributes = True
+        use_enum_values = True
 
 
 class Deal(DealInDB):

@@ -14,12 +14,14 @@ router = APIRouter()
 
 
 async def get_current_user(
-    token: str = Depends(verify_token),
+    token: dict = Depends(verify_token),
     db: AsyncSession = Depends(get_async_session)
 ) -> User:
     """Получение текущего пользователя"""
     user_service = UserService(db)
-    user = await user_service.get_by_id(token["user_id"])
+    # В токене используется ключ "sub" для хранения user_id
+    user_id = int(token.get("sub"))
+    user = await user_service.get_by_id(user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

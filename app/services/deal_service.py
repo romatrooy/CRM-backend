@@ -40,20 +40,25 @@ class DealService:
         skip: int = 0,
         limit: int = 100,
         search: Optional[str] = None,
-        stage: Optional[str] = None,
         status: Optional[str] = None,
-        contact_id: Optional[int] = None,
+        manager_id: Optional[int] = None,  # Фильтр по менеджеру
+        contact_id: Optional[int] = None,  # Фильтр по клиенту
         company_id: Optional[int] = None
     ) -> Tuple[List[Deal], int]:
         """Получение списка сделок с фильтрацией"""
+        # Базовый фильтр: по умолчанию показываем сделки текущего пользователя
+        # Если указан manager_id, фильтруем по нему
+        manager_filter = Deal.owner_id == (manager_id if manager_id else owner_id)
+        
         query = select(Deal).where(
             and_(
-                Deal.owner_id == owner_id,
+                manager_filter,
                 Deal.is_deleted == False
             )
         )
         
         # Поиск
+        search_filter = None
         if search:
             search_filter = or_(
                 Deal.title.ilike(f"%{search}%"),
@@ -61,15 +66,17 @@ class DealService:
             )
             query = query.where(search_filter)
         
-        # Фильтр по этапу
-        if stage:
-            query = query.where(Deal.stage == stage)
-        
         # Фильтр по статусу
         if status:
-            query = query.where(Deal.status == status)
+            from app.models.deal import DealStatus
+            try:
+                status_enum = DealStatus(status)
+                query = query.where(Deal.status == status_enum)
+            except ValueError:
+                # Если статус невалидный, просто игнорируем фильтр
+                pass
         
-        # Фильтр по контакту
+        # Фильтр по клиенту (contact_id)
         if contact_id:
             query = query.where(Deal.contact_id == contact_id)
         
@@ -80,17 +87,20 @@ class DealService:
         # Получение общего количества
         count_query = select(func.count(Deal.id)).where(
             and_(
-                Deal.owner_id == owner_id,
+                manager_filter,
                 Deal.is_deleted == False
             )
         )
         
-        if search:
+        if search_filter:
             count_query = count_query.where(search_filter)
-        if stage:
-            count_query = count_query.where(Deal.stage == stage)
         if status:
-            count_query = count_query.where(Deal.status == status)
+            from app.models.deal import DealStatus
+            try:
+                status_enum = DealStatus(status)
+                count_query = count_query.where(Deal.status == status_enum)
+            except ValueError:
+                pass
         if contact_id:
             count_query = count_query.where(Deal.contact_id == contact_id)
         if company_id:
@@ -103,7 +113,8 @@ class DealService:
         result = await self.db.execute(
             query.options(
                 selectinload(Deal.contact),
-                selectinload(Deal.company)
+                selectinload(Deal.company),
+                selectinload(Deal.owner)
             )
             .offset(skip)
             .limit(limit)
@@ -115,8 +126,15 @@ class DealService:
     
     async def create_deal(self, deal_data: DealCreate, owner_id: int) -> Deal:
         """Создание новой сделки"""
+        deal_dict = deal_data.dict()
+        # Убеждаемся, что contact_id и company_id равны None, если они 0 или None
+        if deal_dict.get('contact_id') == 0:
+            deal_dict['contact_id'] = None
+        if deal_dict.get('company_id') == 0:
+            deal_dict['company_id'] = None
+        
         deal = Deal(
-            **deal_data.dict(),
+            **deal_dict,
             owner_id=owner_id
         )
         
@@ -139,6 +157,25 @@ class DealService:
         update_data = deal_update.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(deal, field, value)
+        
+        # updated_at обновится автоматически через event listener
+        await self.db.commit()
+        await self.db.refresh(deal)
+        return deal
+    
+    async def update_deal_status(
+        self,
+        deal_id: int,
+        status,
+        owner_id: int
+    ) -> Optional[Deal]:
+        """Обновление статуса сделки"""
+        deal = await self.get_deal(deal_id, owner_id)
+        if not deal:
+            return None
+        
+        deal.status = status
+        # updated_at обновится автоматически через event listener
         
         await self.db.commit()
         await self.db.refresh(deal)

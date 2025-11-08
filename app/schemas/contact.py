@@ -23,6 +23,19 @@ class ContactBase(BaseModel):
     company_id: Optional[int] = None
     custom_fields: Dict[str, Any] = {}
     tags: List[str] = []
+    
+    @validator('company_id')
+    def validate_company_id(cls, v):
+        """Преобразуем 0 в None для внешнего ключа"""
+        return None if v == 0 else v
+    
+    @validator('birthday')
+    def validate_birthday_timezone(cls, v):
+        """Преобразуем timezone-aware datetime в timezone-naive для birthday"""
+        if v is not None and v.tzinfo is not None:
+            # Убираем timezone информацию
+            return v.replace(tzinfo=None)
+        return v
 
 
 class ContactCreate(ContactBase):

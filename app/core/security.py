@@ -5,11 +5,15 @@ from datetime import datetime, timedelta
 from typing import Optional, Union
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
 from app.core.config import settings
 
 # Контекст для хеширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# OAuth2 схема для получения токена из заголовка Authorization
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -34,7 +38,7 @@ def create_refresh_token(data: dict):
     return encoded_jwt
 
 
-def verify_token(token: str, token_type: str = "access") -> dict:
+def verify_token(token: str = Depends(oauth2_scheme), token_type: str = "access") -> dict:
     """Проверка JWT токена"""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
