@@ -14,12 +14,11 @@ docker-compose up
 
 После запуска API доступен по `http://localhost:8000`.
 
-### 2. Открытие Swagger и ReDoc
+### 2. Открытый Swagger
 
 - Swagger UI: `http://localhost:8000/api/v1/docs`
-- ReDoc: `http://localhost:8000/api/v1/redoc`
 
-Swagger предоставляет интерактивное тестирование, ReDoc — статическую документацию.
+Swagger предоставляет интерактивное тестирование
 
 ### 3. Авторизация в Swagger
 
