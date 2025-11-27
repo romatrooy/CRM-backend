@@ -269,6 +269,4 @@ alembic downgrade -1
 - Автоматическое развертывание
 - Rollback стратегии
 
-## Лицензия
 
-MIT License
