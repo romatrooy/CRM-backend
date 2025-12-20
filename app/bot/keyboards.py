@@ -107,7 +107,7 @@ def get_deal_status_keyboard(deal_id: int) -> InlineKeyboardMarkup:
             InlineKeyboardButton("✅ Завершена", callback_data=f"deal_status_{deal_id}|Завершена"),
             InlineKeyboardButton("❌ Отменена", callback_data=f"deal_status_{deal_id}|Отменена")
         ],
-        [InlineKeyboardButton("🔙 Назад", callback_data=f"deal_detail_{deal_id}")]
+        [InlineKeyboardButton("🔙 К списку сделок", callback_data="deal_back")]
     ]
     return InlineKeyboardMarkup(buttons)
 
