@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "allow"  # Разрешаем дополнительные переменные окружения (например, для бота)
 
 
 # Создание экземпляра настроек
