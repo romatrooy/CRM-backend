@@ -2,7 +2,7 @@
 Основной роутер API v1
 """
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, contacts, companies, deals, activities, files
+from app.api.v1.endpoints import auth, users, contacts, companies, deals, activities, files, logs
 
 api_router = APIRouter()
 
@@ -14,3 +14,4 @@ api_router.include_router(companies.router, prefix="/companies", tags=["companie
 api_router.include_router(deals.router, prefix="/deals", tags=["deals"])
 api_router.include_router(activities.router, prefix="/activities", tags=["activities"])
 api_router.include_router(files.router, prefix="/files", tags=["files"])
+api_router.include_router(logs.router, prefix="/frontend-logs", tags=["logs"])
