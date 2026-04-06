@@ -25,8 +25,8 @@ redis==5.0.1
 celery==5.3.4
 kombu==5.3.4
 
-# HTTP клиент
-httpx==0.25.2
+# HTTP клиент (>=0.27 нужен для python-telegram-bot 22.x)
+httpx==0.28.1
 aiofiles==23.2.1
 
 # Telegram бот
@@ -36,7 +36,6 @@ python-telegram-bot>=22.5
 python-dotenv==1.0.0
 pytest==7.4.3
 pytest-asyncio==0.21.1
-httpx==0.25.2
 
 # Логирование и мониторинг
 structlog==23.2.0

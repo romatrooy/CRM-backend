@@ -1,9 +1,12 @@
 """
 Основной файл приложения CRM системы
 """
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
 import structlog
 
 from app.core.config import settings
@@ -57,6 +60,16 @@ app.add_middleware(
 
 # Подключение роутеров
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Раздача загруженных файлов (аватары и др.)
+_upload_root = Path(settings.UPLOAD_ROOT)
+_upload_root.mkdir(parents=True, exist_ok=True)
+(_upload_root / "avatars").mkdir(parents=True, exist_ok=True)
+app.mount(
+    settings.UPLOAD_URL_PREFIX,
+    StaticFiles(directory=str(_upload_root)),
+    name="uploads",
+)
 
 
 @app.on_event("startup")

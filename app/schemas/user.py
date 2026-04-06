@@ -37,6 +37,7 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     timezone: Optional[str] = None
     language: Optional[str] = None
+    avatar_url: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
 
 

@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     
     # Файловое хранилище
     STORAGE_TYPE: str = "local"  # local, s3, minio
+    UPLOAD_ROOT: str = "uploads"
+    UPLOAD_URL_PREFIX: str = "/uploads"
+    AVATAR_MAX_SIZE_BYTES: int = 5 * 1024 * 1024
     S3_BUCKET_NAME: Optional[str] = None
     S3_ACCESS_KEY: Optional[str] = None
     S3_SECRET_KEY: Optional[str] = None
