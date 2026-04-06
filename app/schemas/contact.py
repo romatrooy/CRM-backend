@@ -58,6 +58,7 @@ class ContactUpdate(BaseModel):
     source: Optional[str] = None
     priority: Optional[str] = None
     company_id: Optional[int] = None
+    avatar_url: Optional[str] = None
     custom_fields: Optional[Dict[str, Any]] = None
     tags: Optional[List[str]] = None
 
@@ -66,6 +67,7 @@ class ContactInDB(ContactBase):
     """Схема контакта в базе данных"""
     id: int
     owner_id: int
+    avatar_url: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     last_contacted: Optional[datetime] = None

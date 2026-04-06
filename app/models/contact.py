@@ -19,6 +19,7 @@ class Contact(Base):
     middle_name = Column(String(100), nullable=True)
     email = Column(String(255), nullable=True, index=True)
     phone = Column(String(20), nullable=True, index=True)
+    avatar_url = Column(String(500), nullable=True)
     
     # Дополнительная информация
     job_title = Column(String(200), nullable=True)

@@ -2,9 +2,10 @@
 Эндпоинты для контактов
 """
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, File as FastAPIFile, HTTPException, UploadFile, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.avatar_upload import local_path_from_contact_avatar_url, save_contact_avatar_file
 from app.core.database import get_async_session
 from app.core.security import verify_token
 from app.schemas.contact import Contact, ContactCreate, ContactUpdate, ContactList
@@ -77,6 +78,64 @@ async def get_contact(
             detail="Контакт не найден"
         )
     return contact
+
+
+@router.post("/{contact_id}/avatar", response_model=Contact)
+async def upload_contact_avatar(
+    contact_id: int,
+    file: UploadFile = FastAPIFile(..., description="Фото контакта"),
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """Загрузка фото контакта (JPEG, PNG, WebP, GIF). В списке и карточке будет avatar_url."""
+    contact_service = ContactService(db)
+    contact = await contact_service.get_contact(contact_id, current_user.id)
+    if not contact:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Контакт не найден",
+        )
+    old_path = local_path_from_contact_avatar_url(contact.avatar_url)
+    avatar_url, _ = await save_contact_avatar_file(contact_id, file)
+    updated = await contact_service.update_contact(
+        contact_id,
+        ContactUpdate(avatar_url=avatar_url),
+        current_user.id,
+    )
+    if old_path and old_path.is_file():
+        try:
+            old_path.unlink()
+        except OSError:
+            pass
+    return updated
+
+
+@router.delete("/{contact_id}/avatar", response_model=Contact)
+async def delete_contact_avatar(
+    contact_id: int,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """Удаление фото контакта."""
+    contact_service = ContactService(db)
+    contact = await contact_service.get_contact(contact_id, current_user.id)
+    if not contact:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Контакт не найден",
+        )
+    old_path = local_path_from_contact_avatar_url(contact.avatar_url)
+    updated = await contact_service.update_contact(
+        contact_id,
+        ContactUpdate(avatar_url=None),
+        current_user.id,
+    )
+    if old_path and old_path.is_file():
+        try:
+            old_path.unlink()
+        except OSError:
+            pass
+    return updated
 
 
 @router.post("/", response_model=Contact, status_code=status.HTTP_201_CREATED)

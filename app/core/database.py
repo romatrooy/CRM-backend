@@ -1,7 +1,7 @@
 """
 Настройка базы данных
 """
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -42,3 +42,10 @@ async def create_tables():
         # Импортируем все модели для создания таблиц
         from app.models import user, contact, company, deal, activity, file
         await conn.run_sync(Base.metadata.create_all)
+        # create_all не добавляет новые колонки к уже существующим таблицам (типичный Docker volume).
+        if settings.DATABASE_URL_ASYNC.startswith("postgresql"):
+            await conn.execute(
+                text(
+                    "ALTER TABLE contacts ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500)"
+                )
+            )

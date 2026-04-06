@@ -65,6 +65,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 _upload_root = Path(settings.UPLOAD_ROOT)
 _upload_root.mkdir(parents=True, exist_ok=True)
 (_upload_root / "avatars").mkdir(parents=True, exist_ok=True)
+(_upload_root / "contact_avatars").mkdir(parents=True, exist_ok=True)
 app.mount(
     settings.UPLOAD_URL_PREFIX,
     StaticFiles(directory=str(_upload_root)),
